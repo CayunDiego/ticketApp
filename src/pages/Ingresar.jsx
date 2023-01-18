@@ -31,7 +31,7 @@ const Ingresar = () => {
     console.log('Failed:', errorInfo)
   }
 
-  if ( user.agente && user.escritorio ) {
+  if ( user.agent && user.desk ) {
     return <Navigate to="/escritorio" />
   }
 

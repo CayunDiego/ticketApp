@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Row, Col, Typography, Button, Divider } from 'antd'
 import { CloseCircleOutlined, RightOutlined } from '@ant-design/icons'
 import useHideMenu from '../hooks/useHideMenu'
 import { getUserStorage } from '../helpers/getUserStorage'
 import { Navigate, useNavigate } from 'react-router-dom'
+import { SocketContext } from '../context/SocketContext'
 
 const { Title, Text } = Typography
 
@@ -11,18 +12,21 @@ const Escritorio = () => {
   useHideMenu( false )
   const [ user ] = useState( getUserStorage )
   const navigate = useNavigate()
+  const { socket } = useContext( SocketContext )
+  const [ ticket, setTicket ] = useState(null)
 
   const exit = () => {
-    console.log('salir');
     localStorage.clear()
     navigate('/login')
   }
 
   const nextTicket = () => {
-    console.log('nextTicket');
+    socket.emit('next-ticket-to-work', user, (ticket) => {
+      setTicket(ticket)
+    })
   }
 
-  if ( !user.agente || !user.escritorio ) {
+  if ( !user.agent || !user.desk ) {
     return <Navigate to="/login" />
   }
 
@@ -30,9 +34,9 @@ const Escritorio = () => {
     <>
       <Row>
         <Col span={ 20 }>
-          <Title level={ 2 }>{ user.agente }</Title>
+          <Title level={ 2 }>{ user.agent }</Title>
           <Text>Usted está trabajando en el escritorio: </Text>
-          <Text type='success'>{ user.escritorio }</Text>
+          <Text type='success'>{ user.desk }</Text>
         </Col>
         <Col span={ 4 } align="right">
           <Button
@@ -47,17 +51,21 @@ const Escritorio = () => {
         </Col>
       </Row>
       <Divider/>
-      <Row>
-        <Col>
-          <Text>Está atendiendo el ticket número: </Text>
-          <Text
-            style={{ fontSize: 30 }}
-            type='danger'
-          >
-            55
-          </Text>
-        </Col>
-      </Row>
+      {
+        ticket && (
+          <Row>
+            <Col>
+              <Text>Está atendiendo el ticket número: </Text>
+              <Text
+                style={{ fontSize: 30 }}
+                type='danger'
+              >
+                { ticket.number }
+              </Text>
+            </Col>
+          </Row>
+        )
+      }
       <Row>
         <Col offset={ 18 } span={ 6 } align="right">
           <Button
